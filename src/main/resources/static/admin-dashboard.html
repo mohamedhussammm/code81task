@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard - Library Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+        .sidebar .nav-link {
+            color: #333;
+            padding: 10px 15px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: #0d6efd;
+            color: white;
+        }
+        .main-content {
+            padding: 20px;
+        }
+        .stats-card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 sidebar">
+                <h4 class="text-center mb-4">Library Admin</h4>
+                <div class="nav flex-column">
+                    <a class="nav-link active" href="#" data-section="dashboard">
+                        <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                    </a>
+                    <a class="nav-link" href="#" data-section="users">
+                        <i class="bi bi-people me-2"></i> Users
+                    </a>
+                    <a class="nav-link" href="#" data-section="books">
+                        <i class="bi bi-book me-2"></i> Books
+                    </a>
+                    <a class="nav-link" href="#" data-section="borrowing">
+                        <i class="bi bi-arrow-left-right me-2"></i> Borrowing
+                    </a>
+                    <a class="nav-link" href="#" data-section="authors">
+                        <i class="bi bi-person me-2"></i> Authors
+                    </a>
+                    <a class="nav-link" href="#" data-section="categories">
+                        <i class="bi bi-tags me-2"></i> Categories
+                    </a>
+                    <a class="nav-link" href="#" data-section="publishers">
+                        <i class="bi bi-building me-2"></i> Publishers
+                    </a>
+                    <a class="nav-link" href="/logout">
+                        <i class="bi bi-box-arrow-right me-2"></i> Logout
+                    </a>
+                </div>
+            </div>
+
+            <!-- Main content -->
+            <div class="col-md-10 main-content">
+                <h2 class="mb-4">Admin Dashboard</h2>
+                
+                <!-- Dashboard Section -->
+                <div id="dashboard-section">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="card stats-card text-white bg-primary">
+                                <div class="card-body">
+                                    <h5 class="card-title">Total Users</h5>
+                                    <h2 class="card-text" id="total-users">0</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card stats-card text-white bg-success">
+                                <div class="card-body">
+                                    <h5 class="card-title">Total Books</h5>
+                                    <h2 class="card-text" id="total-books">0</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card stats-card text-white bg-warning">
+                                <div class="card-body">
+                                    <h5 class="card-title">Borrowed Books</h5>
+                                    <h2 class="card-text" id="borrowed-books">0</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card stats-card text-white bg-danger">
+                                <div class="card-body">
+                                    <h5 class="card-title">Overdue Books</h5>
+                                    <h2 class="card-text" id="overdue-books">0</h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Recent Activities</h5>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group" id="recent-activities">
+                                        <li class="list-group-item">No recent activities</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Quick Actions</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-primary" onclick="showSection('users')">Manage Users</button>
+                                        <button class="btn btn-success" onclick="showSection('books')">Manage Books</button>
+                                        <button class="btn btn-info" onclick="showSection('borrowing')">View Borrowing Records</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Users Section -->
+                <div id="users-section" class="d-none">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3>User Management</h3>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                            <i class="bi bi-plus-circle"></i> Add User
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="users-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Name</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Users will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Books Section -->
+                <div id="books-section" class="d-none">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3>Book Management</h3>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBookModal">
+                            <i class="bi bi-plus-circle"></i> Add Book
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="books-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Title</th>
+                                    <th>ISBN</th>
+                                    <th>Authors</th>
+                                    <th>Category</th>
+                                    <th>Available</th>
+                                    <th>Total</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Books will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Other sections would be implemented similarly -->
+                
+            </div>
+        </div>
+    </div>
+
+    <!-- Add User Modal -->
+    <div class="modal fade" id="addUserModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addUserForm">
+                        <div class="mb-3">
+                            <label for="newUsername" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="newUsername" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="newEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newFirstName" class="form-label">First Name</label>
+                            <input type="text" class="form-control" id="newFirstName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newLastName" class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="newLastName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newPassword" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="newPassword" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newRole" class="form-label">Role</label>
+                            <select class="form-select" id="newRole" required>
+                                <option value="MEMBER">Member</option>
+                                <option value="STAFF">Staff</option>
+                                <option value="LIBRARIAN">Librarian</option>
+                                <option value="ADMIN">Admin</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="addUser()">Add User</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Book Modal -->
+    <div class="modal fade" id="addBookModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Book</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addBookForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="newTitle" class="form-label">Title</label>
+                                <input type="text" class="form-control" id="newTitle" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="newIsbn" class="form-label">ISBN</label>
+                                <input type="text" class="form-control" id="newIsbn" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="newPublicationYear" class="form-label">Publication Year</label>
+                                <input type="number" class="form-control" id="newPublicationYear">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="newEdition" class="form-label">Edition</label>
+                                <input type="text" class="form-control" id="newEdition">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newSummary" class="form-label">Summary</label>
+                            <textarea class="form-control" id="newSummary" rows="3"></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="newTotalCopies" class="form-label">Total Copies</label>
+                                <input type="number" class="form-control" id="newTotalCopies" value="1" min="1">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="newAvailableCopies" class="form-label">Available Copies</label>
+                                <input type="number" class="form-control" id="newAvailableCopies" value="1" min="0">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="addBook()">Add Book</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/login';
+        }
+
+        // Navigation
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                if (this.getAttribute('href') !== '#') {
+                    return;
+                }
+                e.preventDefault();
+                const section = this.getAttribute('data-section');
+                showSection(section);
+            });
+        });
+
+        function showSection(section) {
+            // Hide all sections
+            document.querySelectorAll('[id$="-section"]').forEach(sec => {
+                sec.classList.add('d-none');
+            });
+            
+            // Show selected section
+            document.getElementById(`${section}-section`).classList.remove('d-none');
+            
+            // Update active nav link
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            document.querySelector(`[data-section="${section}"]`).classList.add('active');
+            
+            // Load data for the section
+            if (section === 'users') {
+                loadUsers();
+            } else if (section === 'books') {
+                loadBooks();
+            } else if (section === 'dashboard') {
+                loadDashboard();
+            }
+        }
+
+        function loadDashboard() {
+            fetch('/api/users', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(response => response.json())
+            .then(users => {
+                document.getElementById('total-users').textContent = users.length;
+            });
+
+            fetch('/api/books', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(response => response.json())
+            .then(books => {
+                document.getElementById('total-books').textContent = books.length;
+            });
+
+            fetch('/api/borrowing/status/BORROWED', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(response => response.json())
+            .then(records => {
+                document.getElementById('borrowed-books').textContent = records.length;
+            });
+
+            fetch('/api/borrowing/overdue', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(response => response.json())
+            .then(records => {
+                document.getElementById('overdue-books').textContent = records.length;
+            });
+        }
+
+        function loadUsers() {
+            fetch('/api/users', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(response => response.json())
+            .then(users => {
+                const tbody = document.querySelector('#users-table tbody');
+                tbody.innerHTML = '';
+                
+                users.forEach(user => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${user.id}</td>
+                        <td>${user.username}</td>
+                        <td>${user.email}</td>
+                        <td>${user.firstName} ${user.lastName}</td>
+                        <td>${user.role}</td>
+                        <td>${user.enabled ? 'Active' : 'Inactive'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="editUser(${user.id})">Edit</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteUser(${user.id})">Delete</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            });
+        }
+
+        function loadBooks() {
+            fetch('/api/books', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(response => response.json())
+            .then(books => {
+                const tbody = document.querySelector('#books-table tbody');
+                tbody.innerHTML = '';
+                
+                books.forEach(book => {
+                    const authors = book.authors ? book.authors.map(a => `${a.firstName} ${a.lastName}`).join(', ') : '';
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${book.id}</td>
+                        <td>${book.title}</td>
+                        <td>${book.isbn}</td>
+                        <td>${authors}</td>
+                        <td>${book.category ? book.category.name : ''}</td>
+                        <td>${book.availableCopies}</td>
+                        <td>${book.totalCopies}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="editBook(${book.id})">Edit</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteBook(${book.id})">Delete</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            });
+        }
+
+        function addUser() {
+            const user = {
+                username: document.getElementById('newUsername').value,
+                email: document.getElementById('newEmail').value,
+                firstName: document.getElementById('newFirstName').value,
+                lastName: document.getElementById('newLastName').value,
+                password: document.getElementById('newPassword').value,
+                role: document.getElementById('newRole').value
+            };
+
+            fetch('/api/users', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(user)
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('User added successfully!');
+                    document.getElementById('addUserForm').reset();
+                    $('#addUserModal').modal('hide');
+                    loadUsers();
+                } else {
+                    alert('Error adding user');
+                }
+            });
+        }
+
+        function addBook() {
+            const book = {
+                title: document.getElementById('newTitle').value,
+                isbn: document.getElementById('newIsbn').value,
+                publicationYear: parseInt(document.getElementById('newPublicationYear').value),
+                edition: document.getElementById('newEdition').value,
+                summary: document.getElementById('newSummary').value,
+                totalCopies: parseInt(document.getElementById('newTotalCopies').value),
+                availableCopies: parseInt(document.getElementById('newAvailableCopies').value)
+            };
+
+            fetch('/api/books', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(book)
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Book added successfully!');
+                    document.getElementById('addBookForm').reset();
+                    $('#addBookModal').modal('hide');
+                    loadBooks();
+                } else {
+                    alert('Error adding book');
+                }
+            });
+        }
+
+        function editUser(id) {
+            // Implementation for editing user
+            alert('Edit user ' + id);
+        }
+
+        function deleteUser(id) {
+            if (confirm('Are you sure you want to delete this user?')) {
+                fetch(`/api/users/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        alert('User deleted successfully!');
+                        loadUsers();
+                    } else {
+                        alert('Error deleting user');
+                    }
+                });
+            }
+        }
+
+        function editBook(id) {
+            // Implementation for editing book
+            alert('Edit book ' + id);
+        }
+
+        function deleteBook(id) {
+            if (confirm('Are you sure you want to delete this book?')) {
+                fetch(`/api/books/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Book deleted successfully!');
+                        loadBooks();
+                    } else {
+                        alert('Error deleting book');
+                    }
+                });
+            }
+        }
+
+        // Load dashboard by default
+        showSection('dashboard');
+    </script>
+</body>
+</html>

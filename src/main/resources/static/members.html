@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <nav class="navbar">
+    <div class="nav-container">
+        <a href="/" class="logo">Library System</a>
+        <ul class="nav-links">
+            <li><a href="/books.html">Books</a></li>
+            <li><a href="/members.html">Members</a></li>
+            <li><a href="/borrow.html">Borrow</a></li>
+            <li><a href="/users.html">Users</a></li>
+            <li><a href="/admin-dashboard.html" class="admin-only">Admin Dashboard</a></li>
+            <li><a href="#" onclick="logout()">Logout</a></li>
+        </ul>
+    </div>
+</nav>
+
+<script>
+// Add this script to all pages
+function checkAuth() {
+    const username = localStorage.getItem('username');
+    const password = localStorage.getItem('password');
+    
+    if (!username || !password) {
+        window.location.href = '/';
+        return;
+    }
+    
+    // Hide admin features for non-admin users
+    const userRole = localStorage.getItem('userRole');
+    if (userRole !== 'ADMIN') {
+        document.querySelectorAll('.admin-only').forEach(el => {
+            el.style.display = 'none';
+        });
+    }
+}
+
+function logout() {
+    localStorage.removeItem('username');
+    localStorage.removeItem('password');
+    localStorage.removeItem('userRole');
+    window.location.href = '/';
+}
+
+document.addEventListener('DOMContentLoaded', checkAuth);
+</script>
+    <script>
+  // Check user role and adjust UI accordingly
+document.addEventListener('DOMContentLoaded', function() {
+    const userRole = localStorage.getItem('userRole');
+    
+    // Hide admin-only features for non-admin users
+    if (userRole !== 'ADMIN') {
+        document.querySelectorAll('.admin-only').forEach(el => {
+            el.style.display = 'none';
+        });
+    }
+    
+    // Hide librarian-only features for staff users
+    if (userRole === 'STAFF') {
+        document.querySelectorAll('.librarian-only').forEach(el => {
+            el.style.display = 'none';
+        });
+    }
+    
+    // Show current user in navbar
+    const username = localStorage.getItem('username');
+    if (username) {
+        const userInfo = document.createElement('div');
+        userInfo.className = 'user-info';
+        userInfo.innerHTML = `Logged in as: ${username} (${userRole})`;
+        document.querySelector('.navbar').appendChild(userInfo);
+    }
+});
+</script>
+    <title>Library System - Members</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .section { margin-bottom: 30px; padding: 20px; border: 1px solid #ccc; }
+        input, textarea, button { display: block; margin: 10px 0; padding: 8px; }
+        pre { background: #f4f4f4; padding: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Member Management</h1>
+    
+    <div class="section">
+        <h2>Get All Members</h2>
+        <button onclick="getAllMembers()">Get All Members</button>
+        <pre id="allMembers"></pre>
+    </div>
+    
+    <div class="section">
+        <h2>Get Member by ID</h2>
+        <input type="number" id="memberId" placeholder="Member ID">
+        <button onclick="getMemberById()">Get Member</button>
+        <pre id="memberResult"></pre>
+    </div>
+    
+    <div class="section">
+        <h2>Create Member</h2>
+        <input type="text" id="firstName" placeholder="First Name">
+        <input type="text" id="lastName" placeholder="Last Name">
+        <input type="email" id="email" placeholder="Email">
+        <input type="text" id="phone" placeholder="Phone">
+        <textarea id="address" placeholder="Address"></textarea>
+        <button onclick="createMember()">Create Member</button>
+        <pre id="createResult"></pre>
+    </div>
+    
+    <div class="section">
+        <h2>Search Members</h2>
+        <input type="text" id="searchName" placeholder="Name">
+        <button onclick="searchByName()">Search by Name</button>
+        <pre id="searchResult"></pre>
+    </div>
+    
+    <script>
+        const baseUrl = 'http://localhost:8080/api/v1/members';
+        const username = 'admin';
+        const password = 'admin';
+        const authHeader = 'Basic ' + btoa(username + ':' + password);
+        
+        function getAllMembers() {
+            fetch(baseUrl, {
+                headers: { 'Authorization': authHeader }
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('allMembers').textContent = JSON.stringify(data, null, 2);
+            })
+            .catch(error => console.error('Error:', error));
+        }
+        
+        function getMemberById() {
+            const id = document.getElementById('memberId').value;
+            fetch(`${baseUrl}/${id}`, {
+                headers: { 'Authorization': authHeader }
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('memberResult').textContent = JSON.stringify(data, null, 2);
+            })
+            .catch(error => console.error('Error:', error));
+        }
+        
+        function createMember() {
+            const member = {
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                address: document.getElementById('address').value
+            };
+            
+            fetch(baseUrl, {
+                method: 'POST',
+                headers: {
+                    'Authorization': authHeader,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(member)
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('createResult').textContent = JSON.stringify(data, null, 2);
+            })
+            .catch(error => console.error('Error:', error));
+        }
+        
+        function searchByName() {
+            const name = document.getElementById('searchName').value;
+            fetch(`${baseUrl}/search/name/${encodeURIComponent(name)}`, {
+                headers: { 'Authorization': authHeader }
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('searchResult').textContent = JSON.stringify(data, null, 2);
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>

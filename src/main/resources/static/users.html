@@ -1,0 +1,143 @@
+
+
+<!DOCTYPE html>
+
+<html>
+    <script>
+  // Check user role and adjust UI accordingly
+document.addEventListener('DOMContentLoaded', function() {
+    const userRole = localStorage.getItem('userRole');
+    
+    // Hide admin-only features for non-admin users
+    if (userRole !== 'ADMIN') {
+        document.querySelectorAll('.admin-only').forEach(el => {
+            el.style.display = 'none';
+        });
+    }
+    
+    // Hide librarian-only features for staff users
+    if (userRole === 'STAFF') {
+        document.querySelectorAll('.librarian-only').forEach(el => {
+            el.style.display = 'none';
+        });
+    }
+    
+    // Show current user in navbar
+    const username = localStorage.getItem('username');
+    if (username) {
+        const userInfo = document.createElement('div');
+        userInfo.className = 'user-info';
+        userInfo.innerHTML = `Logged in as: ${username} (${userRole})`;
+        document.querySelector('.navbar').appendChild(userInfo);
+    }
+});
+</script>
+<head>
+    <nav class="navbar">
+    <div class="nav-container">
+        <a href="/" class="logo">Library System</a>
+        <ul class="nav-links">
+            <li><a href="/books.html">Books</a></li>
+            <li><a href="/members.html">Members</a></li>
+            <li><a href="/borrow.html">Borrow</a></li>
+            <li><a href="/users.html">Users</a></li>
+            <li><a href="/admin-dashboard.html" class="admin-only">Admin Dashboard</a></li>
+            <li><a href="#" onclick="logout()">Logout</a></li>
+        </ul>
+    </div>
+</nav>
+
+<script>
+// Add this script to all pages
+function checkAuth() {
+    const username = localStorage.getItem('username');
+    const password = localStorage.getItem('password');
+    
+    if (!username || !password) {
+        window.location.href = '/';
+        return;
+    }
+    
+    // Hide admin features for non-admin users
+    const userRole = localStorage.getItem('userRole');
+    if (userRole !== 'ADMIN') {
+        document.querySelectorAll('.admin-only').forEach(el => {
+            el.style.display = 'none';
+        });
+    }
+}
+
+function logout() {
+    localStorage.removeItem('username');
+    localStorage.removeItem('password');
+    localStorage.removeItem('userRole');
+    window.location.href = '/';
+}
+
+document.addEventListener('DOMContentLoaded', checkAuth);
+</script>
+    <title>Library System - Users</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .section { margin-bottom: 30px; padding: 20px; border: 1px solid #ccc; }
+        input, textarea, button { display: block; margin: 10px 0; padding: 8px; }
+        pre { background: #f4f4f4; padding: 10px; }
+    </style>
+</head>
+<body>
+    <h1>User Management</h1>
+    
+    <div class="section">
+        <h2>Get All Users</h2>
+        <button onclick="getAllUsers()">Get All Users</button>
+        <pre id="allUsers"></pre>
+    </div>
+    
+    <div class="section">
+        <h2>Create User</h2>
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+        <select id="role">
+            <option value="ADMIN">ADMIN</option>
+            <option value="LIBRARIAN">LIBRARIAN</option>
+            <option value="STAFF">STAFF</option>
+        </select>
+        <button onclick="createUser()">Create User</button>
+        <pre id="createResult"></pre>
+    </div>
+    
+    <script>
+        const baseUrl = 'http://localhost:8080/api/v1/users';
+        const username = 'admin';
+        const password = 'admin';
+        const authHeader = 'Basic ' + btoa(username + ':' + password);
+        
+        function getAllUsers() {
+            fetch(baseUrl, {
+                headers: { 'Authorization': authHeader }
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('allUsers').textContent = JSON.stringify(data, null, 2);
+            })
+            .catch(error => console.error('Error:', error));
+        }
+        
+        function createUser() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const role = document.getElementById('role').value;
+            
+            fetch(`${baseUrl}/create?username=${username}&password=${password}&role=${role}`, {
+                method: 'POST',
+                headers: { 'Authorization': authHeader }
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('createResult').textContent = JSON.stringify(data, null, 2);
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>
