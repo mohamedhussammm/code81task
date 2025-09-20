@@ -1,0 +1,71 @@
+# Library Management System
+
+A comprehensive Library Management System built with Spring Boot, MySQL, and JWT authentication.
+
+## Features
+
+- User authentication and authorization with JWT
+- Role-based access control (Admin, Librarian, Staff, Member)
+- Complete CRUD operations for books, users, authors, categories, and publishers
+- Borrowing and returning functionality
+- Search and filtering capabilities
+- Admin dashboard with statistics and management tools
+
+## Database Design
+
+The system uses a relational database with the following main tables:
+- `users` - Stores user information with role-based access
+- `books` - Contains book metadata with support for multiple authors
+- `authors` - Author information
+- `categories` - Book categories with hierarchical support
+- `publishers` - Publisher information
+- `borrowing_records` - Tracks book borrowing transactions
+- `user_activities` - Logs user activities for auditing
+
+## API Endpoints
+
+### Authentication
+- `POST /api/auth/signin` - User login
+- `POST /api/auth/signup` - User registration
+
+### Users
+- `GET /api/users` - Get all users (Admin/Librarian only)
+- `GET /api/users/{id}` - Get user by ID
+- `POST /api/users` - Create new user (Admin only)
+- `PUT /api/users/{id}` - Update user
+- `DELETE /api/users/{id}` - Delete user (Admin only)
+
+### Books
+- `GET /api/books` - Get all books
+- `GET /api/books/{id}` - Get book by ID
+- `POST /api/books` - Create new book (Admin/Librarian only)
+- `PUT /api/books/{id}` - Update book (Admin/Librarian only)
+- `DELETE /api/books/{id}` - Delete book (Admin/Librarian only)
+
+### Borrowing
+- `GET /api/borrowing` - Get all borrowing records (Admin/Librarian only)
+- `POST /api/borrowing/borrow` - Borrow a book (Admin/Librarian only)
+- `POST /api/borrowing/return/{recordId}` - Return a book (Admin/Librarian only)
+
+## Setup Instructions
+
+1. Create MySQL database named `library_management`
+2. Update `application.properties` with your database credentials
+3. Run the application using Spring Boot
+4. The database schema will be automatically created
+5. Sample data will be inserted automatically
+
+## Default Admin Account
+
+- Username: admin
+- Password: admin123 (change after first login)
+
+## Security
+
+The system uses JWT for authentication with the following roles:
+- ADMIN: Full system access
+- LIBRARIAN: Manage books, borrowing, and members
+- STAFF: Limited access to certain functions
+- MEMBER: Basic access to browse and borrow books
+
+All passwords are encrypted using BCrypt password encoder.
