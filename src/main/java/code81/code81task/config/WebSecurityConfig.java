@@ -1,5 +1,6 @@
 package code81.code81task.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -8,14 +9,10 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import code81.code81task.security.JwtAuthEntryPoint;
-import code81.code81task.security.JwtAuthTokenFilter;
 import code81.code81task.security.UserDetailsServiceImpl;
 
 @Configuration
@@ -23,22 +20,12 @@ import code81.code81task.security.UserDetailsServiceImpl;
 @EnableMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig {
 
-    private final UserDetailsServiceImpl userDetailsService;
-    private final JwtAuthEntryPoint unauthorizedHandler;
-
-    public WebSecurityConfig(UserDetailsServiceImpl userDetailsService,
-                             JwtAuthEntryPoint unauthorizedHandler) {
-        this.userDetailsService = userDetailsService;
-        this.unauthorizedHandler = unauthorizedHandler;
-    }
-
-    @Bean
-    public JwtAuthTokenFilter authenticationJwtTokenFilter() {
-        return new JwtAuthTokenFilter();
-    }
+    @Autowired
+    private UserDetailsServiceImpl userDetailsService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
+        System.out.println("✅ Using BCryptPasswordEncoder for password hashing");
         return new BCryptPasswordEncoder();
     }
 
@@ -59,28 +46,24 @@ public class WebSecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
-            .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedHandler))
-            .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // Public pages & static resources
-                .requestMatchers("/", "/login", "/register",
-                                 "/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
-                // Auth API endpoints
-                .requestMatchers("/api/auth/**").permitAll()
-                // Admin pages
+                .requestMatchers("/", "/auth/register", "/login", "/css/**", "/js/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
-                // User pages
-                .requestMatchers("/user/**").authenticated()
-                // Any other request requires authentication
                 .anyRequest().authenticated()
+            )
+            .formLogin(form -> form
+                .loginPage("/login")  // 👈 Spring Security login page
+                .loginProcessingUrl("/login") // 👈 where form posts
+                .defaultSuccessUrl("/user/dashboard", true)
+                .permitAll()
+            )
+            .logout(logout -> logout
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/login?logout")
+                .permitAll()
             );
 
-        // Add JWT filter
-        http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
-
-        // Register authentication provider
         http.authenticationProvider(authenticationProvider());
-
         return http.build();
     }
 }
